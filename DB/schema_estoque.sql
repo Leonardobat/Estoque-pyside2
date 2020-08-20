@@ -1,23 +1,14 @@
 DROP TABLE IF EXISTS estoque;
-DROP TABLE IF EXISTS informacao;
 DROP TABLE IF EXISTS tracker;
 
 CREATE TABLE estoque (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome TEXT NOT NULL,
   code TEXT UNIQUE NOT NULL,
   preco_compra INTEGER NOT NULL,
   preco_venda INTEGER NOT NULL,
-  quantidade INTEGER NOT NULL
-);
-
-CREATE TABLE informacao (
-  codeid INTEGER NOT NULL,
-  nome TEXT NOT NULL,
-  descricao TEXT,
-  FOREIGN KEY(codeid)
-  REFERENCES estoque(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  quantidade INTEGER NOT NULL,
+  descricao TEXT
 );
 
 CREATE TABLE tracker (
