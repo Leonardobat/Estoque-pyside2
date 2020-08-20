@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
-from PySide2.QtCore import Slot
+from PySide2.QtCore import Slot, Signal
 from PySide2.QtWidgets import (
-    QMdiArea,
     QMainWindow,
     QMenuBar,
     QAction,
@@ -10,27 +9,24 @@ from PySide2.QtWidgets import (
     QMessageBox,
     QApplication,
     QLabel,
-    QTabWidget,
+    QGridLayout,
+    QWidget,
 )
 from novas_pecas import Novas_Pecas
 from busca_pecas import Buscador_de_Pecas
 
-class Janelas(QMdiArea):
-    def __init__(self):  # Inicialização da Janela
-        QMdiArea.__init__(self)
-        window1 = self.addSubWindow(Buscador_de_Pecas())
-        window2 = self.addSubWindow(Novas_Pecas())
-        window1.setWindowTitle("Busque por Peças")
-        window2.setWindowTitle("Novas Peças")
-        self.setViewMode(QMdiArea.TabbedView)
-        self.setActiveSubWindow(window1)
-        self.setTabsClosable(False)
-
 class Principal(QMainWindow):
-    def __init__(self, widget):
+    def __init__(self):
         QMainWindow.__init__(self)
         self.setWindowTitle("Tião Automecânica")
-        self.setCentralWidget(widget)
+        self.widget = QWidget()
+        w1, w2 = Novas_Pecas(), Buscador_de_Pecas()
+        w1.setMaximumWidth(350)
+        self.layout = QGridLayout()
+        self.layout.addWidget(w1, 0, 0, 1, 1)
+        self.layout.addWidget(w2, 0, 2, 1, 2)
+        self.widget.setLayout(self.layout)
+        self.setCentralWidget(self.widget)
         self.menu = QMenuBar()
         self.setMenuBar(self.menu)
         self.sobre = QAction("Sobre", self)
@@ -56,8 +52,6 @@ class Principal(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = Janelas()
-    window = Principal(widget)
-    #window.resize(900, 600)
+    window = Principal()
     window.showMaximized()
     sys.exit(app.exec_())

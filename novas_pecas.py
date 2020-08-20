@@ -77,7 +77,7 @@ class Novas_Pecas(QWidget):
         # Salva a peça
         code = self.entry_code.text()
         descricao = self.textEntry_descricao.toPlainText()
-        nome = self.entry_nome.text()
+        nome = self.entry_nome.text().upper()
         quantidade = self.entry_quantidade.value()
         preco_compra = self.entry_preco_compra.value()
         preco_venda = self.entry_preco_venda.value()

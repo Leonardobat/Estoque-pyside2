@@ -15,7 +15,7 @@ from PySide2.QtWidgets import (
 from PySide2.QtCore import Slot, Qt
 from motor import estoque_driver
 
-# Segunda Aba
+# Migrar pra 1 Aba, como ? só jesus sabe
 class Atualizar_Pecas(QDialog):
     def __init__(self, id):
         # Inicialização da Janela

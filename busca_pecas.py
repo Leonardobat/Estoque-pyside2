@@ -11,10 +11,10 @@ from PySide2.QtWidgets import (
     QTableWidgetItem,
     QWidget,
 )
-from PySide2.QtCore import Slot, Qt
+from PySide2.QtCore import Slot, Qt, Signal
 from motor import estoque_driver
 from atualize_pecas import Atualizar_Pecas
-from main import Janelas
+from novas_pecas import Novas_Pecas
 
 # from atualize_pecas import *
 
@@ -35,11 +35,21 @@ class Buscador_de_Pecas(QWidget):
 
         self.pecas = 0
         self.tabela_pecas = QTableWidget()
-        self.tabela_pecas.setColumnCount(4)
+        self.tabela_pecas.setColumnCount(5)
         self.tabela_pecas.setHorizontalHeaderLabels(
-            ["Código", "Quantidade", "Preço de Compra (R$)", "Preço de Venda (R$)"]
+            [
+                "Código",
+                "Nome",
+                "Quantidade",
+                "Preço de Compra (R$)",
+                "Preço de Venda (R$)",
+            ]
         )
-        self.tabela_pecas.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tabela_pecas.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents
+        )
+        self.tabela_pecas.horizontalHeader().setStretchLastSection(True)
+        self.tabela_pecas.resizeColumnsToContents()
         self.tabela_pecas.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tabela_pecas.itemDoubleClicked.connect(self.info)
 
@@ -54,23 +64,27 @@ class Buscador_de_Pecas(QWidget):
     @Slot()
     def buscar(self):
         self.tabela_pecas.clearContents()
+        self.tabela_pecas.setRowCount(0)
         self.pecas = 0
-        peca_buscada = self.entry_busca.text()
+        peca_buscada = self.entry_busca.text().upper()
         data = self.driver.search(peca_buscada)
         for peca in data:
             code = QTableWidgetItem(peca["code"])
+            name = QTableWidgetItem(peca["nome"])
             qty = QTableWidgetItem(str(peca["quantidade"]))
             buy_price = QTableWidgetItem(str(peca["preco_compra"]))
             sell_price = QTableWidgetItem(str(peca["preco_venda"]))
             code.setTextAlignment(Qt.AlignCenter)
+            name.setTextAlignment(Qt.AlignCenter)
             qty.setTextAlignment(Qt.AlignCenter)
             buy_price.setTextAlignment(Qt.AlignCenter)
             sell_price.setTextAlignment(Qt.AlignCenter)
             self.tabela_pecas.insertRow(self.pecas)
             self.tabela_pecas.setItem(self.pecas, 0, code)
-            self.tabela_pecas.setItem(self.pecas, 1, qty)
-            self.tabela_pecas.setItem(self.pecas, 2, buy_price)
-            self.tabela_pecas.setItem(self.pecas, 3, sell_price)
+            self.tabela_pecas.setItem(self.pecas, 1, name)
+            self.tabela_pecas.setItem(self.pecas, 2, qty)
+            self.tabela_pecas.setItem(self.pecas, 3, buy_price)
+            self.tabela_pecas.setItem(self.pecas, 4, sell_price)
             self.pecas += 1
 
     @Slot()
@@ -89,5 +103,5 @@ class Buscador_de_Pecas(QWidget):
         else:
             atualizar_quantidade = Atualizar_Pecas(id)
             atualizar_quantidade.setWindowTitle("Atualizar")
-            #atualizar_quantidade.setFixedSize(270, 245)
+            atualizar_quantidade.setFixedSize(270, 245)
             atualizar_quantidade.exec()
