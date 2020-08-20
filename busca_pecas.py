@@ -13,13 +13,15 @@ from PySide2.QtWidgets import (
 )
 from PySide2.QtCore import Slot, Qt, Signal
 from motor import estoque_driver
-from atualize_pecas import Atualizar_Pecas
 from novas_pecas import Novas_Pecas
 
 # from atualize_pecas import *
 
 # Segunda Aba
 class Buscador_de_Pecas(QWidget):
+    selected_cell_info = Signal(dict)
+    status_signal = Signal(str)
+
     def __init__(self):
 
         QWidget.__init__(self)
@@ -93,15 +95,13 @@ class Buscador_de_Pecas(QWidget):
         col = self.tabela_pecas.currentColumn()
         code = self.tabela_pecas.item(row, 0)
         id = self.driver.get_id(code.text())
-        if col == 0:
+        if col == 0 or col == 1:
             data = self.driver.show_info(id)
             texto = "Nome: {0}\nDescrição: {1}".format(data["nome"], data["descricao"])
             popup_info = QMessageBox(QMessageBox.Information, "Busca", "Informações:")
             popup_info.setInformativeText(texto)
             popup_info.addButton(QMessageBox.Ok)
             popup_info.exec()
+            self.status_signal.emit("Feito")
         else:
-            atualizar_quantidade = Atualizar_Pecas(id)
-            atualizar_quantidade.setWindowTitle("Atualizar")
-            atualizar_quantidade.setFixedSize(270, 245)
-            atualizar_quantidade.exec()
+            self.selected_cell_info.emit(id)

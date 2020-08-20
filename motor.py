@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sqlite3
+import sqlite3, time
 from pathlib import Path
 from datetime import datetime
 
@@ -26,40 +26,55 @@ class estoque_driver:
         self.db.commit()
         id = self.get_id(data["code"])
         self.db.execute(
-            "INSERT INTO tracker (codeid, timestamp, delta) VALUES (?, ?, ?)",
-            (id, datetime.now().isoformat(timespec="minutes"), data["qty"]),
+            "INSERT INTO tracker (codeid, time, delta) VALUES (?, ?, ?)",
+            (id, int(time.time()), data["qty"]),
         )
         self.db.commit()
         return
 
     def buy_update(self, data: dict) -> dict:
+        id = self.get_id(data["code"])
         self.db.execute(
-            "UPDATE estoque SET quantidade = ?, preco_compra = ?, WHERE id = ?",
-            (data["qty"], data["buy_price"], data["id"]),
+            "UPDATE tracker SET time = ?, delta = ? WHERE id = ?",
+            (int(time.time()), data["qty"], id),
         )
+        old_data = dict(
+            self.db.execute(
+                "SELECT quantidade, preco_compra FROM estoque WHERE id = ?", (id,),
+            ).fetchone()
+        )
+        data["buy_price"] = (
+            data["buy_price"] * data["qty"]
+            + old_data["quantidade"] * old_data["preco_compra"]
+        ) / (old_data["quantidade"] + data["qty"])
+        data["qty"] += old_data["quantidade"]
         self.db.execute(
-            "UPDATE tracker SET timestamp = ?, delta = ? WHERE ID = ?",
-            (
-                data["id"],
-                datetime.now().isoformat(timespec="minutes"),
-                data["delta_qty"],
-            ),
+            "UPDATE estoque SET quantidade = ?, preco_compra = ? WHERE id = ?",
+            (data["qty"], data["buy_price"], id),
         )
+
         self.db.commit()
         return
 
     def sell_update(self, data: dict) -> dict:
+        id = self.get_id(data["code"])
+        self.db.execute(
+            "UPDATE tracker SET time = ?, delta = ? WHERE id = ?",
+            (int(time.time()), (-data["qty"]), id),
+        )
+        old_data = dict(
+            self.db.execute(
+                "SELECT quantidade, preco_venda FROM estoque WHERE id = ?", (id,),
+            ).fetchone()
+        )
+        data["sell_price"] = (
+            old_data["quantidade"] * old_data["preco_venda"]
+            - data["sell_price"] * data["qty"]
+        ) / (old_data["quantidade"] - data["qty"])
+        old_data["quantidade"] -= data["qty"]
         self.db.execute(
             "UPDATE estoque SET quantidade = ?, preco_venda = ? WHERE id = ?",
-            (data["qty"], data["sell_price"], data["id"]),
-        )
-        self.db.execute(
-            "UPDATE tracker SET timestamp = ?, delta = ? WHERE id = ?",
-            (
-                data["id"],
-                datetime.now().isoformat(timespec="minutes"),
-                (data["delta_qty"]),
-            ),
+            (old_data["quantidade"], data["sell_price"], id),
         )
         self.db.commit()
         return
@@ -71,7 +86,8 @@ class estoque_driver:
     def search(self, word: str) -> dict:
         search_word = "{0}%".format(word)
         info = self.db.execute(
-            "SELECT * FROM estoque WHERE code LIKE ? or nome LIKE ?", (search_word, search_word)
+            "SELECT * FROM estoque WHERE code LIKE ? or nome LIKE ?",
+            (search_word, search_word),
         ).fetchall()
         return info
 

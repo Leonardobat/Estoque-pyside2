@@ -5,16 +5,17 @@ CREATE TABLE estoque (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nome TEXT NOT NULL,
   code TEXT UNIQUE NOT NULL,
-  preco_compra INTEGER NOT NULL,
-  preco_venda INTEGER NOT NULL,
+  preco_compra REAL NOT NULL,
+  preco_venda REAL NOT NULL,
   quantidade INTEGER NOT NULL,
   descricao TEXT
 );
 
 CREATE TABLE tracker (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   codeid INTEGER NOT NULL,
-  timestamp TEXT NOT NULL,
   delta INTEGER NOT NULL,
+  time INTEGER NOT NULL,
   FOREIGN KEY(codeid)
   REFERENCES estoque(id)
     ON UPDATE CASCADE
