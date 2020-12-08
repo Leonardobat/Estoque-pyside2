@@ -17,11 +17,11 @@ from PySide2.QtCore import Slot, Qt, Signal
 from PySide2.QtGui import QFont
 from motor import estoque_driver
 
+
 # init_db()
 # Primeira Aba
 class Novas_Pecas(QWidget):
     status_signal = Signal(str)
-    update_signal = Signal()
 
     def __init__(self):  # Inicialização da Janela
         QWidget.__init__(self)
@@ -97,23 +97,16 @@ class Novas_Pecas(QWidget):
         # Tela de Pop Up
         self.popup = QMessageBox(QMessageBox.Question, "Dados", "Tudo Certo?")
         infotext = "Nome: {}\nCódigo: {}\nQuantidade: {}\n".format(
-            peca["name"], peca["code"], peca["qty"]
-        )
+            peca["name"], peca["code"], peca["qty"])
         infotext += "Valor de Compra: {}\nValor de Venda: {}\nDescrição: {}\n".format(
-            peca["buy_price"], peca["sell_price"], peca["description"]
-        )
+            peca["buy_price"], peca["sell_price"], peca["description"])
         self.popup.setInformativeText(infotext)
         Salvar = self.popup.addButton(QMessageBox.Ok)
         self.popup.addButton("Voltar", QMessageBox.ButtonRole.RejectRole)
         self.popup.exec()
         if self.popup.clickedButton() == Salvar:  # Salva as Informações
-            if self.entry_code.isReadOnly():
-                if preco_compra != 0 and preco_venda == 0:
-                    self.driver.buy_update(peca)
-                elif preco_compra == 0 and preco_venda != 0:
-                    self.driver.sell_update(peca)
-                else:
-                    raise KeyError
+            if self.entry_nome.isReadOnly():
+                self.driver.buy_update(peca)
             else:
                 self.driver.add_new(peca)
             self.restore_mode()
@@ -133,6 +126,7 @@ class Novas_Pecas(QWidget):
         self.textEntry_descricao.setText(data["descricao"])
         self.entry_nome.setReadOnly(True)
         self.entry_code.setEnabled(False)
+        self.preco_venda.setEnabled(False)
         self.textEntry_descricao.setReadOnly(True)
 
     @Slot()

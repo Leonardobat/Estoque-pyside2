@@ -12,10 +12,10 @@ from PySide2.QtWidgets import (
     QWidget,
 )
 from PySide2.QtCore import Slot, Qt, Signal
+from PySide2.QtGui import QBrush, QColor
 from motor import estoque_driver
 from novas_pecas import Novas_Pecas
 
-# from atualize_pecas import *
 
 # Segunda Aba
 class Buscador_de_Pecas(QWidget):
@@ -38,22 +38,21 @@ class Buscador_de_Pecas(QWidget):
         self.pecas = 0
         self.tabela_pecas = QTableWidget()
         self.tabela_pecas.setColumnCount(5)
-        self.tabela_pecas.setHorizontalHeaderLabels(
-            [
-                "Código",
-                "Nome",
-                "Quantidade",
-                "Preço de Compra (R$)",
-                "Preço de Venda (R$)",
-            ]
-        )
+        self.tabela_pecas.setHorizontalHeaderLabels([
+            "Código",
+            "Nome",
+            "Quantidade",
+            "Preço de Compra (R$)",
+            "Preço de Venda (R$)",
+        ])
         self.tabela_pecas.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents
-        )
+            QHeaderView.ResizeToContents)
         self.tabela_pecas.horizontalHeader().setStretchLastSection(True)
         self.tabela_pecas.resizeColumnsToContents()
         self.tabela_pecas.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tabela_pecas.itemDoubleClicked.connect(self.info)
+        self.yellow_brush = QBrush(QColor(255, 255, 0, 191))
+        self.red_brush = QBrush(QColor(255, 0, 0, 191))
 
         # Leiaute:
         self.layout = QGridLayout()
@@ -81,6 +80,18 @@ class Buscador_de_Pecas(QWidget):
             qty.setTextAlignment(Qt.AlignCenter)
             buy_price.setTextAlignment(Qt.AlignCenter)
             sell_price.setTextAlignment(Qt.AlignCenter)
+            if peca["quantidade"] < 5 and peca["preco_compra"] < 100:
+                qty.setBackground(self.yellow_brush)
+                code.setBackground(self.yellow_brush)
+                name.setBackground(self.yellow_brush)
+                buy_price.setBackground(self.yellow_brush)
+                sell_price.setBackground(self.yellow_brush)
+            elif peca["quantidade"] == 0:
+                qty.setBackground(self.red_brush)
+                code.setBackground(self.red_brush)
+                name.setBackground(self.red_brush)
+                buy_price.setBackground(self.red_brush)
+                sell_price.setBackground(self.red_brush)
             self.tabela_pecas.insertRow(self.pecas)
             self.tabela_pecas.setItem(self.pecas, 0, code)
             self.tabela_pecas.setItem(self.pecas, 1, name)
@@ -97,8 +108,10 @@ class Buscador_de_Pecas(QWidget):
         id = self.driver.get_id(code.text())
         if col == 0 or col == 1:
             data = self.driver.show_info(id)
-            texto = "Nome: {0}\nDescrição: {1}".format(data["nome"], data["descricao"])
-            popup_info = QMessageBox(QMessageBox.Information, "Busca", "Informações:")
+            texto = "Nome: {}\nDescrição: {}\nVariação: {}".format(
+                data["nome"], data["descricao"], data["delta"])
+            popup_info = QMessageBox(QMessageBox.Information, "Busca",
+                                     "Informações:")
             popup_info.setInformativeText(texto)
             popup_info.addButton(QMessageBox.Ok)
             popup_info.exec()
