@@ -108,8 +108,9 @@ class Buscador_de_Pecas(QWidget):
         id = self.driver.get_id(code.text())
         if col == 0 or col == 1:
             data = self.driver.show_info(id)
-            texto = "Nome: {}\nDescrição: {}\nVariação: {}".format(
-                data["nome"], data["descricao"], data["delta"])
+            texto = "Nome: {}\nDescrição: {}\nVendas (7 d): {}\nCompras (7 d): {}".format(
+                data["nome"], data["descricao"], data["sell_delta"],
+                data["buy_delta"])
             popup_info = QMessageBox(QMessageBox.Information, "Busca",
                                      "Informações:")
             popup_info.setInformativeText(texto)

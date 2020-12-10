@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sqlite3, time, sys
+import sqlite3, sys
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -13,11 +13,6 @@ class estoque_driver():
         elif sys.platform.startswith('win'):
             path = Path.home().joinpath('Documents', 'Oficina', 'Estoque',
                                         'estoque.sqlite')
-        self.db = sqlite3.connect(str(path),
-                                  detect_types=sqlite3.PARSE_DECLTYPES)
-        self.db.row_factory = sqlite3.Row
-
-        path = Path.cwd().joinpath("DB").joinpath("estoque.sqlite")
         self.db = sqlite3.connect(str(path),
                                   detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = sqlite3.Row
@@ -39,7 +34,7 @@ class estoque_driver():
         id = self.get_id(data["code"])
         self.db.execute(
             "INSERT INTO tracker (codeid, time, delta) VALUES (?, ?, ?)",
-            (id, int(time.time()), data["qty"]),
+            (id, int(datetime.now().timestamp()), data["qty"]),
         )
         self.db.commit()
         return
@@ -48,7 +43,7 @@ class estoque_driver():
         id = self.get_id(data["code"])
         self.db.execute(
             "INSERT INTO tracker (codeid, time, delta) VALUES (?, ?, ?)",
-            (id, int(time.time()), data["qty"]),
+            (id, int(datetime.now().timestamp()), data["qty"]),
         )
         old_data = dict(
             self.db.execute(
@@ -91,7 +86,8 @@ class estoque_driver():
             "SELECT nome, descricao FROM estoque WHERE id = ?",
             (id,)).fetchone()
         info = dict(info)
-        info["delta"] = 0
+        info["sell_delta"] = 0
+        info["buy_delta"] = 0
         now = int(datetime.now().timestamp())
         week_ago = int((datetime.now() - timedelta(days=7)).timestamp())
         tracker_info = self.db.execute(
@@ -99,11 +95,16 @@ class estoque_driver():
             " AND time > ? AND time <= ? ORDER BY id",
             (id, week_ago, now),
         ).fetchall()
-        tracker_info, delta = tuple(tracker_info), 0
+        tracker_info = tuple(tracker_info)
+        buy_delta, sell_delta = 0, 0
         if tracker_info != []:
             for i in range(len(tracker_info)):
-                delta += tracker_info[i]["delta"]
-            info["delta"] = int(delta)
+                if tracker_info[i]["delta"] > 0:
+                    buy_delta += tracker_info[i]["delta"]
+                else:
+                    sell_delta -= tracker_info[i]["delta"]
+            info["sell_delta"] = int(buy_delta)
+            info["buy_delta"] = int(sell_delta)
         return info
 
     def get_id(self, code: str) -> int:
@@ -113,11 +114,19 @@ class estoque_driver():
 
 
 def init_db():
-    directory = Path.cwd().joinpath("DB")
-    Path.mkdir(directory, parents=True, exist_ok=True)
-    path_db = directory.joinpath("estoque.sqlite")
+    if sys.platform.startswith('linux'):
+        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque')
+        config = Path.home().joinpath('.oficina', 'schema_estoque.sql')
+
+    elif sys.platform.startswith('win'):
+        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque')
+        config = Path.home().joinpath('Documents', 'Oficina',
+                                      'schema_estoque.sql')
+
+    Path.mkdir(path, parents=True, exist_ok=True)
+    path_db = path.joinpath("estoque.sqlite")
     db = sqlite3.connect(str(path_db))
-    with open(directory.joinpath("schema_estoque.sql")) as f:
+    with open(str(config)) as f:
         db.executescript(f.read())
         db.execute("PRAGMA foreign_keys = ON")
         db.execute("VACUUM")

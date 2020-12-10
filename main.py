@@ -67,7 +67,7 @@ class Principal(QMainWindow):
     def info(self):
         self.popup = QMessageBox(QMessageBox.Information, "Sobre",
                                  "Informações")
-        self.popup.setInformativeText("""Suite de Apoio \nVersão 0.3
+        self.popup.setInformativeText("""Suite de Apoio \nVersão 0.4
         \nFeito com S2 por Zero \nMIT License""")
         self.popup.addButton(QMessageBox.Ok)
         self.popup.exec()

@@ -18,9 +18,9 @@ from PySide2.QtGui import QFont
 from motor import estoque_driver
 
 
-# init_db()
 # Primeira Aba
 class Novas_Pecas(QWidget):
+    update_signal = Signal()
     status_signal = Signal(str)
 
     def __init__(self):  # Inicialização da Janela
@@ -42,11 +42,10 @@ class Novas_Pecas(QWidget):
         self.entry_preco_compra = QDoubleSpinBox()
         self.entry_preco_compra.setMaximum(9999)
         self.entry_preco_compra.setPrefix("R$ ")
+        self.entry_preco_compra.setValue(1)
         self.entry_preco_venda = QDoubleSpinBox()
         self.entry_preco_venda.setMaximum(9999)
         self.entry_preco_venda.setPrefix("R$ ")
-
-        # Entrada de Texto:
         self.textEntry_descricao = QTextEdit()
 
         # Botão:
@@ -118,26 +117,26 @@ class Novas_Pecas(QWidget):
         data = self.driver.show(id)
         self.label_nome.setText("Nome da Peça:")
         self.entry_quantidade.setValue(0)
-        self.entry_quantidade.setValue(0)
         self.entry_preco_compra.setValue(0)
-        self.entry_preco_venda.setValue(0)
         self.entry_nome.setText(data["nome"])
         self.entry_code.setText(data["code"])
+        self.entry_preco_venda.setValue(data["preco_venda"])
         self.textEntry_descricao.setText(data["descricao"])
         self.entry_nome.setReadOnly(True)
-        self.entry_code.setEnabled(False)
-        self.preco_venda.setEnabled(False)
+        self.entry_code.setReadOnly(True)
+        self.entry_preco_venda.setReadOnly(True)
         self.textEntry_descricao.setReadOnly(True)
 
     @Slot()
     def restore_mode(self):
         self.label_nome.setText("Nome da Nova Peça:")
         self.entry_nome.setReadOnly(False)
-        self.entry_code.setEnabled(True)
+        self.entry_code.setReadOnly(False)
+        self.entry_preco_venda.setReadOnly(False)
         self.textEntry_descricao.setReadOnly(False)
-        self.entry_nome.setText("")
-        self.entry_code.setText("")
-        self.textEntry_descricao.setText("")
+        self.entry_nome.clear()
+        self.entry_code.clear()
+        self.textEntry_descricao.clear()
         self.entry_quantidade.setValue(0)
         self.entry_preco_compra.setValue(0)
         self.entry_preco_venda.setValue(0)
