@@ -115,22 +115,21 @@ class EstoqueDB():
 
 def init_db():
     if sys.platform.startswith('linux'):
-        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque',
-                                    'estoque.sqlite')
+        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque')
         configPath = Path.home().joinpath('.config', 'oficina',
                                           'schema_estoque.sql')
 
     elif sys.platform.startswith('win'):
-        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque',
-                                    'estoque.sqlite')
+        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque')
         configPath = Path.home().joinpath('Documents', 'Oficina',
                                           'schema_estoque.sql')
     if not Path.is_file(configPath):
         raise NameError('No Config was Found')
 
-    if not Path.is_file(path):
+    if not Path.is_dir(path):
         Path.mkdir(path, parents=True, exist_ok=True)
-        db = sqlite3.connect(str(path))
+        file_path = str(path.joinpath('estoque.sqlite'))
+        db = sqlite3.connect(file_path)
         with Path.open(configPath) as f:
             db.executescript(f.read())
             db.execute("PRAGMA foreign_keys = ON")
