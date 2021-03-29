@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 
-class estoque_driver():
+class EstoqueDB():
 
     def __init__(self):
         if sys.platform.startswith('linux'):
@@ -115,23 +115,30 @@ class estoque_driver():
 
 def init_db():
     if sys.platform.startswith('linux'):
-        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque')
-        config = Path.home().joinpath('.oficina', 'schema_estoque.sql')
+        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque',
+                                    'estoque.sqlite')
+        configPath = Path.home().joinpath('.config', 'oficina',
+                                          'schema_estoque.sql')
 
     elif sys.platform.startswith('win'):
-        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque')
-        config = Path.home().joinpath('Documents', 'Oficina',
-                                      'schema_estoque.sql')
+        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque',
+                                    'estoque.sqlite')
+        configPath = Path.home().joinpath('Documents', 'Oficina',
+                                          'schema_estoque.sql')
+    if not Path.is_file(configPath):
+        raise NameError('No Config was Found')
 
-    Path.mkdir(path, parents=True, exist_ok=True)
-    path_db = path.joinpath("estoque.sqlite")
-    db = sqlite3.connect(str(path_db))
-    with open(str(config)) as f:
-        db.executescript(f.read())
-        db.execute("PRAGMA foreign_keys = ON")
-        db.execute("VACUUM")
-        db.commit()
-        db.close()
+    if not Path.is_file(path):
+        Path.mkdir(path, parents=True, exist_ok=True)
+        db = sqlite3.connect(str(path))
+        with Path.open(configPath) as f:
+            db.executescript(f.read())
+            db.execute("PRAGMA foreign_keys = ON")
+            db.execute("VACUUM")
+            db.commit()
+            db.close()
+    else:
+        return
 
 
 if __name__ == "__main__":

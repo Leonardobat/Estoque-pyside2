@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
-from PySide2.QtCore import Slot, Signal
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Slot, Signal
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import (
     QMainWindow,
     QMenuBar,
-    QAction,
     QStatusBar,
     QMessageBox,
     QApplication,
@@ -14,19 +14,20 @@ from PySide2.QtWidgets import (
     QFrame,
     QSizePolicy,
 )
-from novas_pecas import Novas_Pecas
-from busca_pecas import Buscador_de_Pecas
+from DB import init_db
+from Gui import NovasPeças, BuscadorDePeças
 
 
 class Principal(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        self.inicializar_db()
         self.setWindowTitle("Tião Automecânica - Vendas")
         self.widget = QWidget()
 
         # Janelas
-        w1, w2 = Novas_Pecas(), Buscador_de_Pecas()
+        w1, w2 = NovasPeças(), BuscadorDePeças()
         w2_size_policy = QSizePolicy(QSizePolicy.Preferred,
                                      QSizePolicy.Preferred)
         w2_size_policy.setHorizontalStretch(2)
@@ -75,6 +76,18 @@ class Principal(QMainWindow):
     @Slot()
     def atualizar_status(self, msg: str):
         self.status_label.setText(msg)
+
+    @staticmethod
+    def inicializar_db():
+        try:
+            init_db()
+        except ValueError:
+            popup = QMessageBox(QMessageBox.Critical, "Erro",
+                                 "Erro")
+            popup.setInformativeText("Arquivo de configuração não foi encontrado")
+            popup.addButton(QMessageBox.Ok)
+            popup.exec()
+            exit(1)    
 
 
 if __name__ == "__main__":

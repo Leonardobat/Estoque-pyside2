@@ -20,5 +20,4 @@ CREATE TABLE tracker (
   REFERENCES estoque(id)
     ON UPDATE CASCADE
     ON DELETE CASCADE
-
 );
