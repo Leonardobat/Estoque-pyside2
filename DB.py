@@ -13,11 +13,14 @@ class EstoqueDB():
         elif sys.platform.startswith('win'):
             path = Path.home().joinpath('Documents', 'Oficina', 'Estoque',
                                         'estoque.sqlite')
-        self.db = sqlite3.connect(str(path),
-                                  detect_types=sqlite3.PARSE_DECLTYPES)
+        self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = sqlite3.Row
 
     def add_new(self, data: dict) -> None:
+        for key in data:
+            if data[key] == '':
+                raise ValueError(f"Valor do campo '{key}' é Inválido")
+
         self.db.execute(
             "INSERT INTO estoque (code, quantidade, preco_compra,"
             " preco_venda, nome, descricao) VALUES (?,?,?,?,?,?)",
@@ -115,24 +118,24 @@ class EstoqueDB():
 
 def init_db():
     if sys.platform.startswith('linux'):
-        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque')
+        path = Path.home().joinpath('Documentos', 'Oficina', 'Estoque',
+                                    'estoque.sqlite')
         configPath = Path.home().joinpath('.config', 'oficina',
                                           'schema_estoque.sql')
 
     elif sys.platform.startswith('win'):
-        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque')
+        path = Path.home().joinpath('Documents', 'Oficina', 'Estoque',
+                                    'estoque.sqlite')
         configPath = Path.home().joinpath('Documents', 'Oficina',
                                           'schema_estoque.sql')
     if not Path.is_file(configPath):
         raise NameError('No Config was Found')
 
-    if not Path.is_dir(path):
-        Path.mkdir(path, parents=True, exist_ok=True)
-        file_path = str(path.joinpath('estoque.sqlite'))
-        db = sqlite3.connect(file_path)
+    if not Path.is_file(path):
+        Path.mkdir(path.parent, parents=True, exist_ok=True)
+        db = sqlite3.connect(path)
         with Path.open(configPath) as f:
             db.executescript(f.read())
-            db.execute("PRAGMA foreign_keys = ON")
             db.execute("VACUUM")
             db.commit()
             db.close()

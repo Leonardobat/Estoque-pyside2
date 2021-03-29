@@ -82,12 +82,12 @@ class Principal(QMainWindow):
         try:
             init_db()
         except ValueError:
-            popup = QMessageBox(QMessageBox.Critical, "Erro",
-                                 "Erro")
-            popup.setInformativeText("Arquivo de configuração não foi encontrado")
+            popup = QMessageBox(QMessageBox.Critical, "Erro", "Erro")
+            popup.setInformativeText(
+                "Arquivo de configuração não foi encontrado")
             popup.addButton(QMessageBox.Ok)
             popup.exec()
-            exit(1)    
+            exit(1)
 
 
 if __name__ == "__main__":
